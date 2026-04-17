@@ -4,7 +4,7 @@
 
 限俗小助手是一款专为超星学习通设计的浏览器插件，主要提供以下功能：
 
-1. **解决英文内容不按空格换行问题**：自动将 `<span>` 元素中的 `white-space-collapse: preserve;` 样式替换为包含 `word-break:normal`，确保英文内容能够正常换行。
+1. **解决英文内容不按空格换行问题**：自动为 `<span class="html-content-box">` 元素添加 `word-break:normal` 样式，确保英文内容能够正常换行。
 
 2. **添加克隆活动按钮**：在学习通的活动列表页面，自动在"权限设置"按钮左侧添加"克隆活动"按钮，方便快速复制活动。
 
@@ -29,7 +29,7 @@
 2. **解压文件**
    - 找到下载的 ZIP 文件（通常在下载文件夹中）
    - 右键点击文件，选择"解压"或"全部解压缩"
-   - 确保解压后的文件夹名称为 `browser-extension`
+   - 确保解压后的文件夹名称为 `raw_study`
 
 3. **在浏览器中加载插件**
 
@@ -37,14 +37,14 @@
    1. 打开浏览器，输入 `chrome://extensions/`（Chrome）或 `edge://extensions/`（Edge）
    2. 在页面右上角找到并启用"开发者模式"
    3. 点击"加载已解压的扩展程序"
-   4. 选择解压后的 `browser-extension` 文件夹
+   4. 选择解压后的 `raw_study` 文件夹
    5. 插件将自动安装，浏览器工具栏会显示插件图标
 
    #### Firefox 浏览器
    1. 打开 Firefox，输入 `about:debugging`
    2. 点击"此 Firefox"
    3. 点击"临时载入附加组件"
-   4. 选择解压后的 `browser-extension` 文件夹中的 `manifest.json` 文件
+   4. 选择解压后的 `raw_study` 文件夹中的 `manifest.json` 文件
    5. 插件将临时安装，可以在浏览器工具栏看到插件图标
 
 ## 使用方法
@@ -72,10 +72,10 @@ A: 从 GitHub 重新下载最新版本，删除旧版本后重新加载新版本
 ## 版本信息
 
 - 版本号：1.0
-- 版权信息：© 袁芳芳 yffyeah<at>hotmail.com
+- 版权信息：© 袁芳芳 yffyeah#hotmail.com（请把#替换为@，发送邮件到该邮箱联系我）
 
 ## 注意事项
 
-- 本插件仅在超星学习通网站（https://mobilelearn.chaoxing.com/）上生效
+- 本插件仅在超星学习通网站上生效（https://mobilelearn.chaoxing.com/）
 - 插件不会收集或上传任何用户数据
 - 如遇问题，请联系插件开发者
