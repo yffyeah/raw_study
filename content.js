@@ -8,8 +8,8 @@ function replaceWhiteSpaceStyles() {
   try {
     isProcessing = true;
     
-    // 遍历所有 span 元素
-    const allElements = document.querySelectorAll('span');
+    // 遍历所有 html-content-box 元素
+    const allElements = document.querySelectorAll('.html-content-box');
     
     // 限制处理的元素数量，避免性能问题
     const maxElements = 1000;
@@ -17,24 +17,16 @@ function replaceWhiteSpaceStyles() {
     
     elementsToProcess.forEach(element => {
       try {
-        const style = window.getComputedStyle(element);
-        const whiteSpaceCollapse = style.getPropertyValue('white-space-collapse');
+        // 获取元素的当前样式
+        const currentStyle = element.getAttribute('style') || '';
         
-        // 检查是否有 white-space-collapse: preserve;
-        if (whiteSpaceCollapse === 'preserve') {
-          // 获取元素的当前样式
-          const currentStyle = element.getAttribute('style') || '';
+        // 检查是否已经包含 word-break:normal
+        if (!currentStyle.includes('word-break:normal')) {
+          // 在样式末尾添加 word-break:normal
+          const newStyle = currentStyle ? currentStyle + ' word-break:normal;' : 'word-break:normal;';
           
-          // 检查是否已经包含 word-break:normal
-          if (!currentStyle.includes('word-break:normal')) {
-            // 替换 white-space-collapse: preserve; 为 white-space-collapse: preserve;word-break:normal
-            const newStyle = currentStyle.replace(/white-space-collapse:\s*preserve;/g, 'white-space-collapse: preserve;word-break:normal;');
-            
-            // 如果样式发生了变化，更新元素的样式
-            if (newStyle !== currentStyle) {
-              element.setAttribute('style', newStyle);
-            }
-          }
+          // 更新元素的样式
+          element.setAttribute('style', newStyle);
         }
       } catch (e) {
         // 忽略错误，避免影响其他功能
