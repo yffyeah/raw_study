@@ -8,8 +8,8 @@ function replaceWhiteSpaceStyles() {
   try {
     isProcessing = true;
     
-    // 遍历所有 html-content-box 元素
-    const allElements = document.querySelectorAll('.html-content-box');
+    // 遍历所有 span 标签且 class="html-content-box" 的元素
+    const allElements = document.querySelectorAll('span.html-content-box');
     
     // 限制处理的元素数量，避免性能问题
     const maxElements = 1000;
