@@ -364,7 +364,7 @@ function addImageRotateButton() {
         // 实现顺时针旋转按钮点击事件
         clockwiseBtn.addEventListener('click', function(e) {
           e.preventDefault();
-          rotation += 90;
+          rotation -= 90;
           img.style.transform = `rotate(${rotation}deg)`;
           img.style.transition = 'transform 0.3s ease';
           // 解决旋转后图片太宽的问题 - 自适应缩放
@@ -385,7 +385,7 @@ function addImageRotateButton() {
         // 实现逆时针旋转按钮点击事件
         counterClockwiseBtn.addEventListener('click', function(e) {
           e.preventDefault();
-          rotation -= 90;
+          rotation += 90;
           img.style.transform = `rotate(${rotation}deg)`;
           img.style.transition = 'transform 0.3s ease';
           // 解决旋转后图片太宽的问题 - 自适应缩放
