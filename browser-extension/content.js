@@ -367,15 +367,18 @@ function addImageRotateButton() {
           rotation += 90;
           img.style.transform = `rotate(${rotation}deg)`;
           img.style.transition = 'transform 0.3s ease';
-          // 解决旋转后图片太宽的问题
+          // 解决旋转后图片太宽的问题 - 自适应缩放
           img.style.maxWidth = '100%';
+          img.style.maxHeight = '80vh';
           img.style.height = 'auto';
+          img.style.width = 'auto';
           img.style.objectFit = 'contain';
-          // 为父容器添加横向滚动
+          // 确保图片容器正确显示
           const parent = img.parentNode;
           if (parent) {
-            parent.style.overflowX = 'auto';
             parent.style.display = 'block';
+            parent.style.textAlign = 'center';
+            parent.style.overflowX = 'hidden';
           }
         });
         
@@ -385,15 +388,18 @@ function addImageRotateButton() {
           rotation -= 90;
           img.style.transform = `rotate(${rotation}deg)`;
           img.style.transition = 'transform 0.3s ease';
-          // 解决旋转后图片太宽的问题
+          // 解决旋转后图片太宽的问题 - 自适应缩放
           img.style.maxWidth = '100%';
+          img.style.maxHeight = '80vh';
           img.style.height = 'auto';
+          img.style.width = 'auto';
           img.style.objectFit = 'contain';
-          // 为父容器添加横向滚动
+          // 确保图片容器正确显示
           const parent = img.parentNode;
           if (parent) {
-            parent.style.overflowX = 'auto';
             parent.style.display = 'block';
+            parent.style.textAlign = 'center';
+            parent.style.overflowX = 'hidden';
           }
         });
         
