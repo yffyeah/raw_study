@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "限俗小助手",
+  "version": "1.0",
+  "description": "活动列表页默认增加克隆按钮，解决英文内容不按照空格换行的问题，给活动列表页添加一个切换按钮，点击后可以展开或收起所有活动列表",
+  "icons": {
+    "16": "logo16.png",
+    "48": "logo48.png",
+    "128": "logo128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "限俗小助手"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://mobilelearn.chaoxing.com/*", "https://mooc2-ans.chaoxing.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["i18n.txt"],
+      "matches": ["https://mobilelearn.chaoxing.com/*", "https://mooc2-ans.chaoxing.com/*"]
+    }
+  ]
+}
