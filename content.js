@@ -291,11 +291,140 @@ function adjustEnglishTextInGroupTop() {
   }
 }
 
+function addImageRotateButton() {
+  // 防止递归调用
+  if (isProcessing) return;
+  
+  try {
+    isProcessing = true;
+    
+    // 寻找所有 class="ans-ued-img" 的图片
+    const images = document.querySelectorAll('img.ans-ued-img');
+    
+    images.forEach(img => {
+      try {
+        // 检查是否已经添加了旋转按钮
+        if (img.parentNode.querySelector('.rotate-img-btn-container')) {
+          return; // 已经添加了旋转按钮，跳过
+        }
+        
+        // 创建按钮容器
+        const btnContainer = document.createElement('div');
+        btnContainer.className = 'rotate-img-btn-container';
+        btnContainer.style.marginBottom = '10px';
+        btnContainer.style.display = 'flex';
+        btnContainer.style.gap = '10px';
+        btnContainer.style.justifyContent = 'center';
+        
+        // 初始化旋转角度
+        let rotation = 0;
+        
+        // 顺时针旋转按钮 SVG 图标
+        const clockwiseIcon = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4V1L8 5L12 9V4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 11.45 4.45 11 5 11C5.55 11 6 11.45 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6Z" fill="white"/>
+          </svg>
+        `;
+        
+        // 逆时针旋转按钮 SVG 图标
+        const counterClockwiseIcon = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4V1L8 5L12 9V4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 11.45 19.55 11 19 11C18.45 11 18 11.45 18 12C18 15.31 15.31 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6Z" fill="white"/>
+          </svg>
+        `;
+        
+        // 创建顺时针旋转按钮
+        const clockwiseBtn = document.createElement('button');
+        clockwiseBtn.className = 'rotate-img-btn';
+        clockwiseBtn.innerHTML = clockwiseIcon;
+        clockwiseBtn.style.padding = '8px';
+        clockwiseBtn.style.backgroundColor = '#3A8BFF';
+        clockwiseBtn.style.color = 'white';
+        clockwiseBtn.style.border = 'none';
+        clockwiseBtn.style.borderRadius = '4px';
+        clockwiseBtn.style.cursor = 'pointer';
+        clockwiseBtn.style.display = 'flex';
+        clockwiseBtn.style.alignItems = 'center';
+        clockwiseBtn.style.justifyContent = 'center';
+        
+        // 创建逆时针旋转按钮
+        const counterClockwiseBtn = document.createElement('button');
+        counterClockwiseBtn.className = 'rotate-img-btn';
+        counterClockwiseBtn.innerHTML = counterClockwiseIcon;
+        counterClockwiseBtn.style.padding = '8px';
+        counterClockwiseBtn.style.backgroundColor = '#3A8BFF';
+        counterClockwiseBtn.style.color = 'white';
+        counterClockwiseBtn.style.border = 'none';
+        counterClockwiseBtn.style.borderRadius = '4px';
+        counterClockwiseBtn.style.cursor = 'pointer';
+        counterClockwiseBtn.style.display = 'flex';
+        counterClockwiseBtn.style.alignItems = 'center';
+        counterClockwiseBtn.style.justifyContent = 'center';
+        
+        // 实现顺时针旋转按钮点击事件
+        clockwiseBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          rotation -= 90;
+          img.style.transform = `rotate(${rotation}deg)`;
+          img.style.transition = 'transform 0.3s ease';
+          // 解决旋转后图片太宽的问题 - 自适应缩放
+          img.style.maxWidth = '100%';
+          img.style.maxHeight = '80vh';
+          img.style.height = 'auto';
+          img.style.width = 'auto';
+          img.style.objectFit = 'contain';
+          // 确保图片容器正确显示
+          const parent = img.parentNode;
+          if (parent) {
+            parent.style.display = 'block';
+            parent.style.textAlign = 'center';
+            parent.style.overflowX = 'hidden';
+          }
+        });
+        
+        // 实现逆时针旋转按钮点击事件
+        counterClockwiseBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          rotation += 90;
+          img.style.transform = `rotate(${rotation}deg)`;
+          img.style.transition = 'transform 0.3s ease';
+          // 解决旋转后图片太宽的问题 - 自适应缩放
+          img.style.maxWidth = '100%';
+          img.style.maxHeight = '80vh';
+          img.style.height = 'auto';
+          img.style.width = 'auto';
+          img.style.objectFit = 'contain';
+          // 确保图片容器正确显示
+          const parent = img.parentNode;
+          if (parent) {
+            parent.style.display = 'block';
+            parent.style.textAlign = 'center';
+            parent.style.overflowX = 'hidden';
+          }
+        });
+        
+        // 将两个按钮添加到容器中
+        btnContainer.appendChild(clockwiseBtn);
+        btnContainer.appendChild(counterClockwiseBtn);
+        
+        // 在图片的上方插入按钮容器
+        if (img.parentNode) {
+          img.parentNode.insertBefore(btnContainer, img);
+        }
+      } catch (e) {
+        // 忽略错误，避免影响其他功能
+      }
+    });
+  } catch (e) {
+    // 忽略错误，避免影响其他功能
+  } finally {
+    isProcessing = false;
+  }
+}
 // 初始运行一次
 setTimeout(() => {
   replaceWhiteSpaceStyles();
   addCloneActivePageLink();
   addToggleButton();
-  adjustEnglishTextInGroupTop();
-  // replaceI18NConfig();
+  addImageRotateButton();
 }, 1000); // 延迟执行，确保页面已加载
