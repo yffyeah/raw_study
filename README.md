@@ -51,7 +51,7 @@
 
 ## 使用方法
 
-1. 安装插件后，访问超星学习通网站（https://mobilelearn.chaoxing.com/）
+1. 安装插件后，访问超星学习通网站，例如 https://mobilelearn.chaoxing.com/
 
 2. 插件会自动生效：
    - 页面中的英文内容将能够正常换行
