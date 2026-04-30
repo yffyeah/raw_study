@@ -182,49 +182,7 @@ function addToggleButton() {
   }
 }
 
-function replaceI18NConfig() {
-  // 防止递归调用
-  if (isProcessing) return;
-  
-  try {
-    isProcessing = true;
-    
-    // 从 i18n.txt 加载配置
-    fetch(chrome.runtime.getURL('i18n.txt'))
-      .then(response => response.text())
-      .then(text => {
-        try {
-          // 提取 I18N_Config 对象
-          const configMatch = text.match(/I18N_Config\s*=\s*({[\s\S]*?});/);
-          if (configMatch && configMatch[1]) {
-            // 在页面中执行脚本，替换 I18N_Config
-            const script = document.createElement('script');
-            script.textContent = `
-              try {
-                // 替换页面中的 I18N_Config
-                if (typeof I18N_Config !== 'undefined') {
-                  I18N_Config = ${configMatch[1]};
-                }
-              } catch (e) {
-                console.error('替换 I18N_Config 失败:', e);
-              }
-            `;
-            document.head.appendChild(script);
-            document.head.removeChild(script);
-          }
-        } catch (e) {
-          // 忽略错误，避免影响其他功能
-        }
-      })
-      .catch(e => {
-        // 忽略错误，避免影响其他功能
-      });
-  } catch (e) {
-    // 忽略错误，避免影响其他功能
-  } finally {
-    isProcessing = false;
-  }
-}
+
 
 function adjustEnglishTextInGroupTop() {
   // 防止递归调用
