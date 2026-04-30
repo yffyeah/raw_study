@@ -72,6 +72,6 @@ A: 从 GitHub 重新下载最新版本，删除旧版本后重新加载新版本
 
 ## 注意事项
 
-- 本插件仅在超星学习通网站上生效（https://mobilelearn.chaoxing.com/）
+- 本插件仅在超星学习通网站上生效，例如：https://mobilelearn.chaoxing.com/
 - 插件不会收集或上传任何用户数据
 - 如遇问题，请联系插件开发者
