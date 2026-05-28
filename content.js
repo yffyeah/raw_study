@@ -4,27 +4,27 @@ let isProcessing = false;
 function replaceWhiteSpaceStyles() {
   // 防止递归调用
   if (isProcessing) return;
-  
+
   try {
     isProcessing = true;
-    
+
     // 遍历所有 span 标签且 class="html-content-box" 的元素
     const allElements = document.querySelectorAll('span.html-content-box');
-    
+
     // 限制处理的元素数量，避免性能问题
     const maxElements = 1000;
     const elementsToProcess = Array.from(allElements).slice(0, maxElements);
-    
+
     elementsToProcess.forEach(element => {
       try {
         // 获取元素的当前样式
         const currentStyle = element.getAttribute('style') || '';
-        
+
         // 检查是否已经包含 word-break:normal
         if (!currentStyle.includes('word-break:normal')) {
           // 在样式末尾添加 word-break:normal
           const newStyle = currentStyle ? currentStyle + ' word-break:normal;' : 'word-break:normal;';
-          
+
           // 更新元素的样式
           element.setAttribute('style', newStyle);
         }
@@ -42,34 +42,130 @@ function replaceWhiteSpaceStyles() {
 function addCloneActivePageLink() {
   // 防止递归调用
   if (isProcessing) return;
-  
+
   try {
     isProcessing = true;
-    
+
     // 寻找目标链接元素
     const targetLinks = document.querySelectorAll('a.permission-manage2[href="javascript:;"]');
-    
+
     // 遍历所有符合条件的链接
     for (const targetLink of targetLinks) {
       // 检查链接文本是否包含"权限设置"
       if (targetLink.textContent.includes('权限设置')) {
+        // 检查是否已经存在导出签到按钮
+        const existingExportBtn = targetLink.previousElementSibling;
+        if (existingExportBtn && existingExportBtn.className === 'permission-manage2' && existingExportBtn.textContent === '导出签到') {
+          break; // 已经存在导出签到按钮，跳过
+        }
+
+        // 创建导出签到按钮
+        const exportBtn = document.createElement('a');
+        exportBtn.href = 'javascript:;';
+        exportBtn.className = 'permission-manage2';
+        exportBtn.textContent = '导出签到';
+
+        // 添加点击事件，按顺序点击所有导出签到数据链接
+        exportBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+
+          // 获取必要的参数
+          let courseId = '';
+          let classId = '';
+          let fid = '';
+
+          // 从 URL 中提取参数
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.has('courseId')) {
+            courseId = urlParams.get('courseId');
+          }
+          if (urlParams.has('classId')) {
+            classId = urlParams.get('classId');
+          }
+          if (urlParams.has('fid')) {
+            fid = urlParams.get('fid');
+          }
+
+          // 如果 URL 中没有，尝试从页面元素中获取
+          if (!courseId) {
+            const courseIdInput = document.querySelector('input[name="courseId"], input[id*="courseId"]');
+            if (courseIdInput) {
+              courseId = courseIdInput.value;
+            }
+          }
+          if (!classId) {
+            const classIdInput = document.querySelector('input[name="classId"], input[id*="classId"]');
+            if (classIdInput) {
+              classId = classIdInput.value;
+            }
+          }
+          if (!fid) {
+            fid = '4744'; // 默认值
+          }
+
+          // 如果没有获取到必要参数，提示用户
+          if (!courseId || !classId) {
+            alert('无法获取课程ID或班级ID');
+            return;
+          }
+
+          // 寻找所有签到活动（class 包含 list-name icon-signin-g 的元素）
+          const signinActivities = document.querySelectorAll('.list-name.icon-signin-g');
+          const exportUrls = [];
+
+          signinActivities.forEach(signinElement => {
+            try {
+              // 获取父级 li 元素，从中获取 activeid
+              const liElement = signinElement.closest('li');
+              if (!liElement) {
+                return;
+              }
+
+              const activeId = liElement.getAttribute('activeid');
+              if (!activeId) {
+                return;
+              }
+
+              // 构建导出 URL
+              const exportUrl = `https://mobilelearn.chaoxing.com/widget/pcpick/main/exportSingleData?courseId=${courseId}&classId=${classId}&activeId=${activeId}&appType=2&fid=${fid}`;
+              exportUrls.push(exportUrl);
+            } catch (e) {
+              // 忽略错误，避免影响其他功能
+            }
+          });
+
+          // 按顺序打开所有导出链接
+          if (exportUrls.length > 0) {
+            exportUrls.forEach((url, index) => {
+              setTimeout(() => {
+                window.open(url, '_blank');
+              }, index * 500); // 每个链接间隔 500ms
+            });
+          } else {
+            alert('没有找到签到活动');
+          }
+        });
+
+        // 在克隆活动按钮的左边插入导出签到按钮
+        targetLink.parentNode.insertBefore(exportBtn, targetLink);
+
         // 检查是否已经存在克隆链接
         const existingCloneLink = targetLink.previousElementSibling;
         if (existingCloneLink && existingCloneLink.className === 'permission-manage2' && existingCloneLink.textContent === '克隆活动') {
           break; // 已经存在克隆链接，跳过
         }
-        
+
         // 创建新的链接元素
         const cloneLink = document.createElement('a');
         cloneLink.href = 'javascript:;';
         cloneLink.className = 'permission-manage2';
         cloneLink.setAttribute('onclick', 'app.toCloneActivePage()');
         cloneLink.textContent = '克隆活动';
-        
-        // 在目标链接的左边插入新链接
-        targetLink.parentNode.insertBefore(cloneLink, targetLink);
-        
-        // 跳出循环，只添加一个克隆链接
+
+        // 在导出签到按钮的左边插入克隆链接
+        targetLink.parentNode.insertBefore(cloneLink, exportBtn);
+
+        // 跳出循环，只添加一次
         break;
       }
     }
@@ -83,25 +179,25 @@ function addCloneActivePageLink() {
 function addToggleButton() {
   // 防止递归调用
   if (isProcessing) return;
-  
+
   try {
     isProcessing = true;
-    
+
     // 检查页面是否包含 class="wrapper-list" 的元素
     const wrapperListElements = document.querySelectorAll('.wrapper-list');
     if (wrapperListElements.length === 0) {
       return; // 页面中没有 wrapper-list 元素，直接返回
     }
-    
+
     // 寻找 class 包含 "content"、"list"、"wrapper" 的 div 或 span 元素
     let targetContainer = null;
-    
+
     // 尝试不同的 class 组合
     const classPatterns = [
       '.list-content-wrapper',
       '.activate-list'
     ];
-    
+
     for (const pattern of classPatterns) {
       const elements = document.querySelectorAll(pattern);
       if (elements.length > 0) {
@@ -109,17 +205,17 @@ function addToggleButton() {
         break;
       }
     }
-    
+
     // 如果没有找到目标容器，回退到寻找 title-name 元素
     if (!targetContainer) {
       return;
     }
-    
+
     // 检查是否已经添加了切换按钮
     if (targetContainer.querySelector('.toggle-wrapper-list-btn')) {
       return; // 已经添加了切换按钮，直接返回
     }
-    
+
     // 创建切换链接
     const toggleLink = document.createElement('a');
     toggleLink.className = 'toggle-wrapper-list-btn';
@@ -132,7 +228,7 @@ function addToggleButton() {
     toggleLink.style.color = '#3A8BFF';
     toggleLink.style.textDecoration = 'none';
     toggleLink.style.cursor = 'pointer';
-    
+
     // 初始化所有 wrapper-list 元素为显示状态
     wrapperListElements.forEach(element => {
       try {
@@ -141,7 +237,7 @@ function addToggleButton() {
         // 忽略错误，避免影响其他功能
       }
     });
-    
+
     // 实现链接点击事件
     toggleLink.addEventListener('click', function(e) {
       e.preventDefault(); // 阻止默认链接行为
@@ -168,7 +264,7 @@ function addToggleButton() {
         });
       }
     });
-    
+
     // 在目标容器的第一个位置插入切换链接
     if (targetContainer.firstChild) {
       targetContainer.insertBefore(toggleLink, targetContainer.firstChild);
@@ -187,29 +283,29 @@ function addToggleButton() {
 function adjustEnglishTextInGroupTop() {
   // 防止递归调用
   if (isProcessing) return;
-  
+
   try {
     isProcessing = true;
-    
+
     // 寻找所有 class 包含 "groupTop" 和 "richtext" 的元素
     const groupTopElements = document.querySelectorAll('.groupTop.richtext, .richtext.groupTop');
-    
+
     groupTopElements.forEach(element => {
       try {
         // 寻找元素中的所有 <p> 标签
         const paragraphs = element.querySelectorAll('p');
-        
+
         paragraphs.forEach(p => {
           try {
             // 获取 <p> 标签的内容
             let content = p.innerHTML;
-            
+
             // 处理英文字符，所有字母的 ASCII 码都减 5
             let processedContent = '';
             for (let i = 0; i < content.length; i++) {
               const char = content[i];
               const charCode = char.charCodeAt(0);
-              
+
               // 处理大写字母
               if (charCode >= 65 && charCode <= 90) {
                 let newCharCode = charCode - 5;
@@ -231,7 +327,7 @@ function adjustEnglishTextInGroupTop() {
                 processedContent += char;
               }
             }
-            
+
             // 更新 <p> 标签的内容
             p.innerHTML = processedContent;
           } catch (e) {
@@ -252,20 +348,20 @@ function adjustEnglishTextInGroupTop() {
 function addImageRotateButton() {
   // 防止递归调用
   if (isProcessing) return;
-  
+
   try {
     isProcessing = true;
-    
+
     // 寻找所有 class="ans-ued-img" 的图片
     const images = document.querySelectorAll('img.ans-ued-img');
-    
+
     images.forEach(img => {
       try {
         // 检查是否已经添加了旋转按钮
         if (img.parentNode.querySelector('.rotate-img-btn-container')) {
           return; // 已经添加了旋转按钮，跳过
         }
-        
+
         // 创建按钮容器
         const btnContainer = document.createElement('div');
         btnContainer.className = 'rotate-img-btn-container';
@@ -273,24 +369,24 @@ function addImageRotateButton() {
         btnContainer.style.display = 'flex';
         btnContainer.style.gap = '10px';
         btnContainer.style.justifyContent = 'center';
-        
+
         // 初始化旋转角度
         let rotation = 0;
-        
+
         // 顺时针旋转按钮 SVG 图标
         const clockwiseIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4V1L8 5L12 9V4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20C7.58 20 4 16.42 4 12C4 11.45 4.45 11 5 11C5.55 11 6 11.45 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6Z" fill="white"/>
           </svg>
         `;
-        
+
         // 逆时针旋转按钮 SVG 图标
         const counterClockwiseIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4V1L8 5L12 9V4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 11.45 19.55 11 19 11C18.45 11 18 11.45 18 12C18 15.31 15.31 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6Z" fill="white"/>
           </svg>
         `;
-        
+
         // 创建顺时针旋转按钮
         const clockwiseBtn = document.createElement('button');
         clockwiseBtn.className = 'rotate-img-btn';
@@ -304,7 +400,7 @@ function addImageRotateButton() {
         clockwiseBtn.style.display = 'flex';
         clockwiseBtn.style.alignItems = 'center';
         clockwiseBtn.style.justifyContent = 'center';
-        
+
         // 创建逆时针旋转按钮
         const counterClockwiseBtn = document.createElement('button');
         counterClockwiseBtn.className = 'rotate-img-btn';
@@ -318,7 +414,7 @@ function addImageRotateButton() {
         counterClockwiseBtn.style.display = 'flex';
         counterClockwiseBtn.style.alignItems = 'center';
         counterClockwiseBtn.style.justifyContent = 'center';
-        
+
         // 实现顺时针旋转按钮点击事件
         clockwiseBtn.addEventListener('click', function(e) {
           e.preventDefault();
@@ -339,7 +435,7 @@ function addImageRotateButton() {
             parent.style.overflowX = 'hidden';
           }
         });
-        
+
         // 实现逆时针旋转按钮点击事件
         counterClockwiseBtn.addEventListener('click', function(e) {
           e.preventDefault();
@@ -360,11 +456,11 @@ function addImageRotateButton() {
             parent.style.overflowX = 'hidden';
           }
         });
-        
+
         // 将两个按钮添加到容器中
         btnContainer.appendChild(clockwiseBtn);
         btnContainer.appendChild(counterClockwiseBtn);
-        
+
         // 在图片的上方插入按钮容器
         if (img.parentNode) {
           img.parentNode.insertBefore(btnContainer, img);
