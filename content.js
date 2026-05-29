@@ -70,38 +70,11 @@ function addCloneActivePageLink() {
           e.preventDefault();
 
           // 获取必要的参数
-          let courseId = '';
-          let classId = '';
-          let fid = '';
+          const courseId = window.courseId;
+          const classId = window.classId;
+          const fid = window.fid || '4744';
 
-          // 从 URL 中提取参数
-          const urlParams = new URLSearchParams(window.location.search);
-          if (urlParams.has('courseId')) {
-            courseId = urlParams.get('courseId');
-          }
-          if (urlParams.has('classId')) {
-            classId = urlParams.get('classId');
-          }
-          if (urlParams.has('fid')) {
-            fid = urlParams.get('fid');
-          }
-
-          // 如果 URL 中没有，尝试从页面元素中获取
-          if (!courseId) {
-            const courseIdInput = document.querySelector('input[name="courseId"], input[id*="courseId"]');
-            if (courseIdInput) {
-              courseId = courseIdInput.value;
-            }
-          }
-          if (!classId) {
-            const classIdInput = document.querySelector('input[name="classId"], input[id*="classId"]');
-            if (classIdInput) {
-              classId = classIdInput.value;
-            }
-          }
-          if (!fid) {
-            fid = '4744'; // 默认值
-          }
+          console.log('从 window 获取的参数:', { courseId, classId, fid });
 
           // 如果没有获取到必要参数，提示用户
           if (!courseId || !classId) {
@@ -109,12 +82,18 @@ function addCloneActivePageLink() {
             return;
           }
 
-          // 寻找所有签到活动（class 包含 list-name icon-signin-g 的元素）
+          // 重新扫描页面上的所有签到活动
           const signinActivities = document.querySelectorAll('.list-name.icon-signin-g');
           const exportUrls = [];
 
+          // 遍历所有签到活动，重新构建导出链接
           signinActivities.forEach(signinElement => {
             try {
+              // 检查是否包含 drawLots class，如果包含则跳过
+              if (signinElement.classList.contains('drawLots')) {
+                return;
+              }
+
               // 获取父级 li 元素，从中获取 activeid
               const liElement = signinElement.closest('li');
               if (!liElement) {
@@ -126,7 +105,7 @@ function addCloneActivePageLink() {
                 return;
               }
 
-              // 构建导出 URL
+              // 重新构建导出 URL
               const exportUrl = `https://mobilelearn.chaoxing.com/widget/pcpick/main/exportSingleData?courseId=${courseId}&classId=${classId}&activeId=${activeId}&appType=2&fid=${fid}`;
               exportUrls.push(exportUrl);
             } catch (e) {
@@ -134,12 +113,18 @@ function addCloneActivePageLink() {
             }
           });
 
-          // 按顺序打开所有导出链接
+          const confirmed = confirm(`即将导出 ${exportUrls.length} 个签到活动数据，是否继续？`);
+            if (!confirmed) {
+              return;
+            }
+          // 输出到 Console 并显示确认框
           if (exportUrls.length > 0) {
+            console.log('即将导出签到活动数据：');
             exportUrls.forEach((url, index) => {
               setTimeout(() => {
                 window.open(url, '_blank');
-              }, index * 500); // 每个链接间隔 500ms
+              }, index * 1000); // 每个链接间隔 1000ms
+              console.log(`${index + 1}. ${url}`);
             });
           } else {
             alert('没有找到签到活动');

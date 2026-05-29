@@ -22,7 +22,8 @@
   "content_scripts": [
     {
       "matches": ["https://mobilelearn.chaoxing.com/*", "https://mooc2-ans.chaoxing.com/*"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "world": "MAIN"
     }
   ],
   "web_accessible_resources": [
