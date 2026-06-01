@@ -460,10 +460,111 @@ function addImageRotateButton() {
     isProcessing = false;
   }
 }
+
+function addShowAllButton() {
+  function tryAddButton(doc = document) {
+    const pageDiv = doc.querySelector('.pageDiv#page');
+    if (!pageDiv) {
+      return false;
+    }
+
+    const toWorkLibrary = doc.querySelector('#toWorkLibrary');
+    if (!toWorkLibrary) {
+      return false;
+    }
+
+    if (toWorkLibrary.parentNode.querySelector('.show-all-btn')) {
+      return true;
+    }
+
+    const showAllBtn = doc.createElement('a');
+    showAllBtn.href = 'javascript:;';
+    showAllBtn.className = 'btnBlue btn_92 fl fs14 show-all-btn';
+    showAllBtn.textContent = '展示全部';
+
+    showAllBtn.addEventListener('click', function() {
+      const dd50 = pageDiv.querySelector('.pageShowNum .select-box dd:nth-child(3)');
+      if (dd50) {
+        dd50.click();
+      }
+    });
+
+    toWorkLibrary.parentNode.insertBefore(showAllBtn, toWorkLibrary.nextSibling);
+    return true;
+  }
+
+  setInterval(() => {
+    tryAddButton();
+    const iframes = document.querySelectorAll('iframe');
+    for (const iframe of iframes) {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          tryAddButton(iframeDoc);
+        }
+      } catch (e) {
+      }
+    }
+  }, 500);
+}
+
+function addUngradedButton() {
+  function tryAddButton(doc = document) {
+    const toWorkLibrary = doc.querySelector('#toWorkLibrary');
+    if (!toWorkLibrary) {
+      return false;
+    }
+
+    if (toWorkLibrary.parentNode.querySelector('.ungraded-btn')) {
+      return true;
+    }
+
+    const ungradedBtn = doc.createElement('a');
+    ungradedBtn.href = 'javascript:;';
+    ungradedBtn.className = 'btnBlue btn_92 fl fs14 ungraded-btn';
+    ungradedBtn.textContent = '未批改';
+    ungradedBtn.style.marginLeft = '10px';
+
+    ungradedBtn.addEventListener('click', function() {
+      const emElements = doc.querySelectorAll('em.fs28');
+      emElements.forEach(em => {
+        em.style.minWidth = '40px';
+        em.style.display = 'inline-block';
+        em.style.textAlign = 'right';
+        
+        if (em.textContent.trim() === '0') {
+          const li = em.closest('li');
+          if (li) {
+            li.style.display = li.style.display === 'none' ? '' : 'none';
+          }
+        }
+      });
+    });
+
+    toWorkLibrary.parentNode.insertBefore(ungradedBtn, toWorkLibrary.nextSibling);
+    return true;
+  }
+
+  setInterval(() => {
+    tryAddButton();
+    const iframes = document.querySelectorAll('iframe');
+    for (const iframe of iframes) {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          tryAddButton(iframeDoc);
+        }
+      } catch (e) {
+      }
+    }
+  }, 500);
+}
 // 初始运行一次
 setTimeout(() => {
   replaceWhiteSpaceStyles();
   addCloneActivePageLink();
   addToggleButton();
   addImageRotateButton();
+  addShowAllButton();
+  addUngradedButton();
 }, 1000); // 延迟执行，确保页面已加载
