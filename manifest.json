@@ -21,7 +21,7 @@
   ],
   "content_scripts": [
     {
-      "matches": ["https://mobilelearn.chaoxing.com/*", "https://mooc2-ans.chaoxing.com/*"],
+      "matches": ["https://mobilelearn.chaoxing.com/*", "https://mooc2-ans.chaoxing.com/*", "https://xueya.chaoxing.com/*"],
       "js": ["content.js"],
       "world": "MAIN"
     }
@@ -29,7 +29,7 @@
   "web_accessible_resources": [
     {
       "resources": ["i18n.txt"],
-      "matches": ["https://mobilelearn.chaoxing.com/*", "https://mooc2-ans.chaoxing.com/*"]
+      "matches": ["https://mobilelearn.chaoxing.com/*", "https://mooc2-ans.chaoxing.com/*", "https://xueya.chaoxing.com/*"]
     }
   ]
 }

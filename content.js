@@ -559,6 +559,113 @@ function addUngradedButton() {
     }
   }, 500);
 }
+
+function addScoreButtonHandler() {
+  // 检查URL是否匹配批阅页面
+  const url = window.location.href;
+  if (!url.includes('chaoxing.com/epub-h5') && !url.includes('objectIds=')) {
+    return;
+  }
+
+  function setupScoreButtons(doc = document) {
+    // 等待按钮加载完成
+    const checkAndSetup = () => {
+      const buttons = doc.querySelectorAll('.score-button');
+      if (buttons.length === 0) {
+        return false;
+      }
+
+      // 检查是否已经添加过60分按钮
+      let hasSixtyButton = false;
+      let zeroButton = null;
+      let fullButton = null;
+      
+      buttons.forEach(button => {
+        if (button.textContent.trim() === '60分') {
+          hasSixtyButton = true;
+        } else if (button.textContent.trim() === '0分') {
+          zeroButton = button;
+        } else if (button.textContent.trim() === '满分') {
+          fullButton = button;
+        }
+      });
+
+      // 如果还没有60分按钮，且有0分和满分按钮，则插入60分按钮
+      if (!hasSixtyButton && zeroButton && fullButton) {
+        // 创建60分按钮，复制0分按钮的所有属性
+        const sixtyButton = doc.createElement('a');
+        
+        // 复制所有属性
+        for (let i = 0; i < zeroButton.attributes.length; i++) {
+          const attr = zeroButton.attributes[i];
+          // 跳过data-has-score-handler属性
+          if (attr.name !== 'data-has-score-handler') {
+            sixtyButton.setAttribute(attr.name, attr.value);
+          }
+        }
+        
+        // 设置按钮文本和自定义属性
+        sixtyButton.textContent = '60分';
+        sixtyButton.dataset.hasScoreHandler = 'true';
+        // 设置60分按钮为蓝底白字
+        sixtyButton.style.backgroundColor = '#1890ff';
+        sixtyButton.style.color = '#ffffff';
+        sixtyButton.style.borderColor = '#1890ff';
+
+        // 添加点击事件
+        sixtyButton.addEventListener('click', function() {
+          const scoreInput = doc.querySelector('#score input.el-input__inner');
+          if (scoreInput) {
+            scoreInput.value = '60';
+            const event = new Event('input', { bubbles: true });
+            scoreInput.dispatchEvent(event);
+          }
+        });
+
+        // 在0分按钮后面插入60分按钮
+        zeroButton.parentNode.insertBefore(sixtyButton, zeroButton.nextSibling);
+
+        // 确保满分按钮保持绿底白字样式
+        fullButton.style.backgroundColor = '#07c160';
+        fullButton.style.color = '#ffffff';
+        fullButton.style.borderColor = '#07c160';
+      }
+
+      return true;
+    };
+
+    // 立即检查一次
+    if (!checkAndSetup()) {
+      // 如果按钮还没加载，每500ms检查一次
+      const interval = setInterval(() => {
+        if (checkAndSetup()) {
+          clearInterval(interval);
+        }
+      }, 500);
+    }
+  }
+
+  // 监听iframe加载
+  function monitorIframes() {
+    setupScoreButtons();
+
+    const iframes = document.querySelectorAll('iframe');
+    for (const iframe of iframes) {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          setupScoreButtons(iframeDoc);
+        }
+      } catch (e) {
+        // 忽略跨域错误
+      }
+    }
+  }
+
+  // 延迟执行，确保页面加载
+  setTimeout(monitorIframes, 1000);
+}
+
 // 初始运行一次
 setTimeout(() => {
   replaceWhiteSpaceStyles();
@@ -567,4 +674,5 @@ setTimeout(() => {
   addImageRotateButton();
   addShowAllButton();
   addUngradedButton();
+  addScoreButtonHandler();
 }, 1000); // 延迟执行，确保页面已加载
