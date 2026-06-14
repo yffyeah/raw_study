@@ -480,7 +480,7 @@ function addShowAllButton() {
     const showAllBtn = doc.createElement('a');
     showAllBtn.href = 'javascript:;';
     showAllBtn.className = 'btnBlue btn_92 fl fs14 show-all-btn';
-    showAllBtn.textContent = '展示全部';
+    showAllBtn.textContent = '最大分页';
 
     showAllBtn.addEventListener('click', function() {
       const dd50 = pageDiv.querySelector('.pageShowNum .select-box dd:nth-child(3)');
@@ -522,20 +522,34 @@ function addUngradedButton() {
     const ungradedBtn = doc.createElement('a');
     ungradedBtn.href = 'javascript:;';
     ungradedBtn.className = 'btnBlue btn_92 fl fs14 ungraded-btn';
-    ungradedBtn.textContent = '未批改';
+    ungradedBtn.textContent = '隐藏零待批';
     ungradedBtn.style.marginLeft = '10px';
 
+    let isUngradedMode = false; // 标记当前状态
+
     ungradedBtn.addEventListener('click', function() {
+      isUngradedMode = !isUngradedMode; // 切换状态
+      ungradedBtn.textContent = isUngradedMode ? '显示零待批' : '隐藏零待批';
+
       const emElements = doc.querySelectorAll('em.fs28');
       emElements.forEach(em => {
         em.style.minWidth = '40px';
         em.style.display = 'inline-block';
         em.style.textAlign = 'right';
-        
-        if (em.textContent.trim() === '0') {
+
+        if (isUngradedMode) {
+          // 未批改模式：隐藏数量为0的
+          if (em.textContent.trim() === '0') {
+            const li = em.closest('li');
+            if (li) {
+              li.style.display = 'none';
+            }
+          }
+        } else {
+          // 已批改模式：显示所有
           const li = em.closest('li');
           if (li) {
-            li.style.display = li.style.display === 'none' ? '' : 'none';
+            li.style.display = '';
           }
         }
       });
