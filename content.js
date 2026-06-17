@@ -490,11 +490,94 @@ function addShowAllButton() {
     });
 
     toWorkLibrary.parentNode.insertBefore(showAllBtn, toWorkLibrary.nextSibling);
+
+    // 添加批量增加补交时间按钮
+    if (toWorkLibrary.parentNode.querySelector('.batch-resubmit-btn')) {
+      return true;
+    }
+
+    const batchResubmitBtn = doc.createElement('a');
+    batchResubmitBtn.href = 'javascript:;';
+    batchResubmitBtn.className = 'btnBlue btn_92 fl fs14 batch-resubmit-btn';
+    batchResubmitBtn.textContent = '补交无期限';
+
+    batchResubmitBtn.addEventListener('click', function() {
+      // 检查是否有未完成的处理
+      if (window.isBatchProcessing) {
+        alert('正在处理中，请稍候...');
+        return;
+      }
+      
+      window.isBatchProcessing = true;
+
+      const workItems = doc.querySelectorAll('ul li[id^="work"]');
+      const workIds = [];
+      const republishLinks = [];
+
+      workItems.forEach(item => {
+        const republishLink = item.querySelector('a[onclick*="republish"]');
+        if (republishLink) {
+          const onclickAttr = republishLink.getAttribute('onclick');
+          const republishMatch = onclickAttr.match(/republish\((\d+)\)/);
+          if (republishMatch) {
+            workIds.push(republishMatch[1]);
+            republishLinks.push(republishLink);
+          }
+        }
+      });
+
+      if (workIds.length === 0) {
+        alert('未找到作业');
+        window.isBatchProcessing = false;
+        return;
+      }
+
+      const confirmResult = confirm(`检测到当前页面有 ${workIds.length} 个作业需要取消补交时间。\n\n点击"确定"将自动打开每个作业的设置页面并取消补交时间。\n\n⚠️ 请确保浏览器已允许弹窗（点击地址栏右侧图标设置）。`);
+      if (!confirmResult) {
+        window.isBatchProcessing = false;
+        return;
+      }
+
+      console.log('开始批量处理作业，待处理列表:', workIds);
+      
+      // 依次点击所有 republish 链接
+      let index = 0;
+      const clickNext = () => {
+        if (index >= republishLinks.length) {
+          console.log('所有作业处理完成！');
+          window.isBatchProcessing = false;
+          localStorage.removeItem('batchProcessingActive');
+          return;
+        }
+        
+        const link = republishLinks[index];
+        const workId = workIds[index];
+        console.log(`正在处理第 ${index + 1}/${republishLinks.length} 个作业，ID:`, workId);
+        
+        // 调用 republish 函数
+        const iframeWindow = link.ownerDocument.defaultView;
+        if (iframeWindow && iframeWindow.republish) {
+          // 为每个页面生成唯一的标记
+          const pageId = 'batch_' + Date.now() + '_' + index;
+          localStorage.setItem('batchProcessingActive', pageId);
+          iframeWindow.republish(workId);
+        }
+        
+        index++;
+        // 等待一段时间后点击下一个
+        setTimeout(clickNext, 5000);
+      };
+      
+      clickNext();
+    });
+
+    toWorkLibrary.parentNode.insertBefore(batchResubmitBtn, showAllBtn.nextSibling);
     return true;
   }
 
   setInterval(() => {
     tryAddButton();
+    
     const iframes = document.querySelectorAll('iframe');
     for (const iframe of iframes) {
       try {
@@ -689,4 +772,65 @@ setTimeout(() => {
   addShowAllButton();
   addUngradedButton();
   addScoreButtonHandler();
+  handleResubmitSettingPage();
 }, 1000); // 延迟执行，确保页面已加载
+
+function handleResubmitSettingPage() {
+  if (!window.location.href.includes('/work/rePublishSetting')) {
+    return;
+  }
+
+  // 检查是否是批量处理打开的页面
+  const isBatchProcessing = localStorage.getItem('batchProcessingActive');
+  if (!isBatchProcessing) {
+    console.log('用户手动打开的页面，跳过自动处理');
+    return;
+  }
+
+  console.log('批量处理打开的页面，开始自动处理，标记:', isBatchProcessing);
+
+  setTimeout(() => {
+    try {
+      const answerAfterEnd = document.querySelector('#answerAfterEnd');
+      if (answerAfterEnd && !answerAfterEnd.classList.contains('Dgblue')) {
+        answerAfterEnd.click();
+      }
+
+      setTimeout(() => {
+        try {
+          const answerDeadlineInput = document.querySelector('#answerDeadlinePicker');
+          
+          // 取消补交：清空日期
+          if (answerDeadlineInput) {
+            answerDeadlineInput.value = '';
+          }
+
+          // 点击确认按钮
+          setTimeout(() => {
+            try {
+              const confirmBtn = document.querySelector('a[onclick="rePublicWork();"]');
+              if (confirmBtn) {
+                confirmBtn.click();
+                console.log('已点击确认按钮，准备关闭窗口');
+                
+                // 移除标记
+                localStorage.removeItem('batchProcessingActive');
+                
+                // 等待确认后关闭窗口
+                setTimeout(() => {
+                  window.close();
+                }, 1000);
+              }
+            } catch (e) {
+              console.error('点击确认按钮失败:', e);
+            }
+          }, 500);
+        } catch (e) {
+          console.error('处理日期失败:', e);
+        }
+      }, 500);
+    } catch (e) {
+      console.error('处理补交设置失败:', e);
+    }
+  }, 1000);
+}
