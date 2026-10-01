@@ -773,7 +773,133 @@ setTimeout(() => {
   addUngradedButton();
   addScoreButtonHandler();
   handleResubmitSettingPage();
+  autoSelectLanguageAndReviewMode();
 }, 1000); // 延迟执行，确保页面已加载
+
+function autoSelectLanguageAndReviewMode() {
+  // URL 检查：仅在 goToWorkEditor 页面生效
+  if (!window.location.href.includes('goToWorkEditor')) {
+    return;
+  }
+
+  function selectInDoc(doc = document) {
+    try {
+      // 选择 C 语言
+      const langDropdowns = doc.querySelectorAll('.selectBoxLang.langList');
+      langDropdowns.forEach(dropdown => {
+        // 检查是否已经选中了 C 语言
+        const currentCodenum = dropdown.getAttribute('codenum');
+        if (currentCodenum === '1') {
+          return; // 已经选中 C，跳过
+        }
+
+        // 先打开下拉框
+        if (dropdown.click) {
+          dropdown.click();
+        }
+
+        // 等待下拉选项出现后点击 C 选项
+        setTimeout(() => {
+          const cOption = dropdown.querySelector('a[codename="C"][codenum="1"]');
+          if (cOption) {
+            // 优先使用 jQuery 触发（如果可用）
+            if (doc.defaultView && doc.defaultView.jQuery) {
+              doc.defaultView.jQuery(cOption).trigger('click');
+            } else {
+              cOption.click();
+            }
+            console.log('已自动选择 C 语言');
+          }
+        }, 200);
+      });
+
+      // 选择系统自动批阅
+      const reviewDropdowns = doc.querySelectorAll('#reviewModeStrong, .selectBoxLang');
+      reviewDropdowns.forEach(dropdown => {
+        // 确保是批阅模式的下拉框（通过内部是否有 value="0" 的 a 标签判断）
+        const autoReviewOption = dropdown.querySelector('a[value="0"]');
+        if (!autoReviewOption) {
+          return;
+        }
+
+        // 检查是否已经选中（检查 p.reviewModeValue 的 value 属性）
+        const currentMode = dropdown.querySelector('p.reviewModeValue');
+        if (currentMode && currentMode.getAttribute('value') === '0') {
+          return; // 已经选中系统自动批阅，跳过
+        }
+
+        // 先打开下拉框
+        if (dropdown.click) {
+          dropdown.click();
+        }
+
+        // 等待下拉选项出现后点击系统自动批阅选项
+        setTimeout(() => {
+          // 下拉框可能已经显示了，直接点击
+          const option = dropdown.querySelector('a[value="0"]');
+          if (option) {
+            if (doc.defaultView && doc.defaultView.jQuery) {
+              doc.defaultView.jQuery(option).trigger('click');
+            } else {
+              option.click();
+            }
+            console.log('已自动选择系统自动批阅');
+          }
+        }, 200);
+      });
+    } catch (e) {
+      // 忽略错误
+    }
+  }
+
+  // 初始选择
+  selectInDoc();
+
+  // 轮询等待 iframe 加载完成后再选择
+  const pollInterval = setInterval(() => {
+    const langDropdowns = document.querySelectorAll('.selectBoxLang.langList');
+    const reviewDropdown = document.querySelector('#reviewModeStrong');
+
+    // 检查主文档的选择状态
+    let langAllSelected = true;
+    langDropdowns.forEach(d => {
+      if (d.getAttribute('codenum') !== '1') {
+        langAllSelected = false;
+      }
+    });
+
+    let reviewSelected = false;
+    if (reviewDropdown) {
+      const p = reviewDropdown.querySelector('p.reviewModeValue');
+      reviewSelected = p && p.getAttribute('value') === '0';
+    }
+
+    // 如果主文档都已选好，且没有 iframe 需要处理，则停止轮询
+    if (langAllSelected && reviewSelected && langDropdowns.length > 0) {
+      clearInterval(pollInterval);
+      return;
+    }
+
+    // 再次尝试选择
+    selectInDoc();
+
+    // 同时处理 iframe
+    const iframes = document.querySelectorAll('iframe');
+    for (const iframe of iframes) {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          selectInDoc(iframeDoc);
+        }
+      } catch (e) {
+        // 忽略跨域错误
+      }
+    }
+  }, 1000);
+
+  // 10 秒后停止轮询，避免无限循环
+  setTimeout(() => clearInterval(pollInterval), 10000);
+}
 
 function handleResubmitSettingPage() {
   if (!window.location.href.includes('/work/rePublishSetting')) {
